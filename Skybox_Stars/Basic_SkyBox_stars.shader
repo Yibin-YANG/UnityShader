@@ -106,32 +106,14 @@ Shader "Custom/Basic_SkyBox_Stars" {
                     float3 curPos = rayMarchBegin + rayDir * curDistance * skyCurvatureFactor;
                     float2 uv = float2(-curPos.x,curPos.z);
 
-                    /*
-                    不动版本
-                    float curAuroras = tex2D(_MainTex, TRANSFORM_TEX(uv, _MainTex)).r;
-                    float3 curColor = sin((_AurorasColor * 2 - 1) + i * 0.043) * 0.5 + 0.5;
-                    avgColor = (avgColor + curColor) / 2;
-                    curAuroras = curAuroras * saturate(1 - pow(curDistance, 1 - _AurorasAttenuation));
-                    color += avgColor * curAuroras * stepSize;
-                    */
-                    
-                    // =====  极光动起来
-                    // 计算扰动uv
 		            float2 warp_vec = tex2D(_AurorasNoiseTex,TRANSFORM_TEX((uv * 2 + _Time.y * _AurorasSpeed),_AurorasNoiseTex));
-                    // 采样当前的噪声强度
+
                     float curNoise = tex2D(_MainTex, TRANSFORM_TEX((uv + warp_vec * 0.1), _MainTex)).r;
-                    //curNoise = tex2D(_MainTex, TRANSFORM_TEX(uv, _MainTex)).r;
-                    // =======================
-                    
-                    // 最后加强度衰减
+
                     curNoise = curNoise * saturate(1 - pow(curDistance, 1 - _AurorasAttenuation));
-                    
-                    // 极光色彩累积计算
-                    // 由于sin的范围是-1到1，所以要先把颜色范围转换到-1到1之间，这通过i计算出当前步进层的色彩
-                    // 最后 * 0.5再加0.5就返回到了原本的0-1的范围区间
+
                     float3 curColor = sin((_AurorasColor * 2 - 1) + j * 0.043) * 0.5 + 0.5;
-                    
-                    // 取两步色彩的平均值 使颜色更接近于本色 
+
                     avgColor = (avgColor + curColor) / 2;
 
                     color += avgColor * curNoise * stepSize;
